@@ -1,1 +1,49 @@
 @import "tailwindcss";
+
+.app-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 55%),
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 55%),
+    radial-gradient(circle at bottom, rgba(16, 185, 129, 0.08), transparent 55%),
+    #020617;
+  position: relative;
+}
+
+.app-shell::before,
+.app-shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.app-shell::before {
+  background:
+    radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.22), transparent 40%),
+    radial-gradient(circle at 80% 10%, rgba(45, 212, 191, 0.18), transparent 45%);
+  opacity: 0.9;
+  filter: blur(32px);
+}
+
+.app-shell::after {
+  background-image: radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.3) 0, transparent 0);
+  background-size: 24px 24px;
+  mix-blend-mode: soft-light;
+  opacity: 0.4;
+}
+
+.fade-in-up {
+  animation: fade-in-up 200ms ease-out forwards;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
