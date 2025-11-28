@@ -42,15 +42,7 @@ export interface FormSchema {
   fields: FieldSchema[]
 }
 
-export type SubmissionDataValue =
-  | string
-  | number
-  | boolean
-  | null
-  | string[]
-  | number[]
-  | Record<string, unknown>
-  | undefined
+export type SubmissionDataValue = FieldValue | Record<string, unknown>
 
 export type SubmissionData = Record<string, SubmissionDataValue>
 
