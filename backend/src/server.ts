@@ -43,6 +43,14 @@ app.use(morgan('common'));
 
 app.use(rateLimiterMiddleware);
 
+app.get('/api/health', (_req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.use('/api', apiRouter);
 
 const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
