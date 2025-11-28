@@ -1,13 +1,14 @@
 # Dynamic Form Builder Backend (Node.js + TypeScript)
 
-This backend powers a dynamic "Employee Onboarding" form using a clean, layered architecture with in-memory storage only.
+This backend powers a dynamic "Employee Onboarding" form using a clean, layered architecture with in-memory storage for submissions and Redis-backed rate limiting.
 
 ## Tech Stack
 
 - Node.js
 - Express
 - TypeScript
-- In-memory storage (JavaScript array) – no database
+- In-memory storage (JavaScript array) for submissions (no database)
+- Redis (used only for rate limiting)
 
 ## Project Structure
 
@@ -27,6 +28,8 @@ This backend powers a dynamic "Employee Onboarding" form using a clean, layered 
   - `formSchema.ts` – Static JSON schema for "Employee Onboarding"
 - `types/`
   - `index.ts` – Shared TypeScript interfaces and types
+- `middleware/`
+  - `rateLimiter.ts` – Redis-backed global rate limiting middleware
 
 ## Form Schema
 
@@ -70,9 +73,25 @@ Submissions are stored in memory for the lifetime of the server:
 - Implemented in `src/services/submissionService.ts`
 - No database or file-based persistence is used
 
+## Rate Limiting
+
+Global, IP-based rate limiting is applied to all routes using `rate-limiter-flexible` with Redis as the store:
+
+- Location: `src/middleware/rateLimiter.ts` (wired in `src/server.ts`)
+- Store: Redis (`REDIS_URL`)
+- Key prefix: `rate_limit`
+- Key: client IP (for example, `rate_limit::1` or `rate_limit:127.0.0.1`)
+- Policy: **100 requests per IP per 60 seconds**
+- When the limit is exceeded:
+  - Response status: `429 Too Many Requests`
+  - JSON body: `{ "message": "Too many requests", "retryAfter": <seconds> }`
+  - Header: `Retry-After: <seconds>`
+
+If `REDIS_URL` is not set, the Redis-backed rate limiter is disabled and no keys will be written to Redis.
+
 ## API Endpoints
 
-Base URL: `http://localhost:4000/api` (by default)
+Base URL: `http://localhost:3000/api` by default (configurable via `PORT`).
 
 ### 1. Get Form Schema
 
@@ -83,7 +102,7 @@ Response:
 ```json
 {
   "success": true,
-  "schema": { ... }
+  "schema": { "...": "..." }
 }
 ```
 
@@ -182,9 +201,14 @@ Not found (`404`):
 
 ## Environment Variables
 
-- `PORT` (optional) – defaults to `4000`
+Defined in `.env` (see `.env.example` for a template):
 
-No other environment variables are required.
+- `PORT` (optional) – HTTP port for the backend (defaults to `3000`)
+- `CORS_ORIGIN` – comma-separated list of allowed frontend origins for CORS, for example:
+  - `http://localhost:5173`
+  - `http://localhost:5173,http://localhost:4173`
+- `REDIS_URL` – Redis connection string used for rate limiting, for example:
+  - `redis://localhost:6379`
 
 ## Running the Backend
 
@@ -202,5 +226,5 @@ npm run build
 npm start
 ```
 
-Made by Sagar Kapoor sagarbadal70@gmail.com
+Made by Sagar Kapoor – sagarbadal70@gmail.com
 
